@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Inbox — cover(SID)@gmail.com</title>
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --panel:#0f1722;
+      --panel2:#0c141e;
+      --line:rgba(255,255,255,.08);
+      --text:rgba(255,255,255,.92);
+      --muted:rgba(255,255,255,.62);
+      --muted2:rgba(255,255,255,.42);
+      --accent:#8ab4f8;
+      --badge:#1a2432;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius:14px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      background: radial-gradient(1200px 800px at 20% 10%, rgba(138,180,248,.18), transparent 55%),
+                  radial-gradient(900px 700px at 80% 20%, rgba(245,180,0,.10), transparent 55%),
+                  radial-gradient(1100px 900px at 60% 90%, rgba(76,175,80,.10), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+      height:100vh;
+      overflow:hidden;
+    }
+    .app{
+      height:100vh;
+      display:grid;
+      grid-template-rows: 56px 1fr;
+    }
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 18px;
+      border-bottom:1px solid var(--line);
+      background: rgba(15,23,34,.72);
+      backdrop-filter: blur(10px);
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:280px;
+    }
+    .logo{
+      width:28px;height:28px;border-radius:8px;
+      background: linear-gradient(135deg, rgba(138,180,248,.95), rgba(138,180,248,.35));
+      box-shadow: var(--shadow);
+      display:grid;place-items:center;
+      color:#0b0f14;
+      font-weight:900;
+      font-family:var(--mono);
+    }
+    .title{
+      display:flex;
+      flex-direction:column;
+      line-height:1.1;
+    }
+    .title .top{
+      font-weight:700;
+      letter-spacing:.2px;
+      font-size:14px;
+    }
+    .title .sub{
+      color:var(--muted);
+      font-size:12px;
+      font-family:var(--mono);
+    }
+    .search{
+      flex:1;
+      max-width:640px;
+      margin:0 16px;
+      position:relative;
+    }
+    .search input{
+      width:100%;
+      padding:10px 12px 10px 38px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      color:var(--text);
+      outline:none;
+    }
+    .search input::placeholder{color:rgba(255,255,255,.45)}
+    .search .icon{
+      position:absolute;
+      left:12px; top:50%;
+      transform:translateY(-50%);
+      color:var(--muted2);
+      font-size:14px;
+      user-select:none;
+    }
+    .meta{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:280px;
+      justify-content:flex-end;
+    }
+    .pill{
+      font-family:var(--mono);
+      font-size:12px;
+      color:var(--muted);
+      background: rgba(255,255,255,.04);
+      border:1px solid var(--line);
+      padding:8px 10px;
+      border-radius:999px;
+      white-space:nowrap;
+    }
+    .layout{
+      display:grid;
+      grid-template-columns: 280px 420px 1fr;
+      height:100%;
+      min-height:0;
+    }
+
+    /* Sidebar */
+    nav{
+      border-right:1px solid var(--line);
+      background: rgba(12,20,30,.58);
+      backdrop-filter: blur(10px);
+      padding:14px;
+      min-height:0;
+      overflow:auto;
+    }
+    .compose{
+      width:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      padding:12px 12px;
+      border-radius:999px;
+      border:1px solid rgba(138,180,248,.35);
+      background: rgba(138,180,248,.10);
+      color:var(--text);
+      cursor:pointer;
+      transition: transform .12s ease, background .12s ease;
+    }
+    .compose:hover{ transform: translateY(-1px); background: rgba(138,180,248,.14); }
+    .compose:active{ transform: translateY(0); }
+    .navlist{
+      margin-top:14px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .navitem{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:10px 10px;
+      border-radius:10px;
+      color:var(--muted);
+      cursor:pointer;
+      border:1px solid transparent;
+      user-select:none;
+    }
+    .navitem.active{
+      background: rgba(255,255,255,.05);
+      border-color: var(--line);
+      color: var(--text);
+    }
+    .badge{
+      font-size:12px;
+      font-family:var(--mono);
+      color: var(--muted);
+      background: var(--badge);
+      border:1px solid var(--line);
+      padding:2px 8px;
+      border-radius:999px;
+    }
+    .note{
+      margin-top:16px;
+      font-size:12px;
+      color:var(--muted2);
+      line-height:1.45;
+      border-top:1px solid var(--line);
+      padding-top:14px;
+    }
+
+    /* List */
+    .list{
+      border-right:1px solid var(--line);
+      background: rgba(15,23,34,.35);
+      min-height:0;
+      overflow:auto;
+    }
+    .listheader{
+      padding:14px 16px 10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      border-bottom:1px solid var(--line);
+      background: rgba(15,23,34,.55);
+      position:sticky; top:0;
+      backdrop-filter: blur(10px);
+      z-index:2;
+    }
+    .listheader .h{
+      font-weight:800;
+      letter-spacing:.2px;
+      font-size:14px;
+    }
+    .listheader .small{
+      font-family:var(--mono);
+      font-size:12px;
+      color:var(--muted);
+    }
+    .row{
+      display:grid;
+      grid-template-columns: 18px 1fr auto;
+      gap:10px;
+      padding:12px 16px;
+      border-bottom:1px solid rgba(255,255,255,.05);
+      cursor:pointer;
+      transition: background .12s ease;
+    }
+    .row:hover{ background: rgba(255,255,255,.03); }
+    .row.active{
+      background: rgba(138,180,248,.10);
+      outline: 1px solid rgba(138,180,248,.25);
+      outline-offset:-1px;
+    }
+    .star{
+      color: rgba(245, 215, 110, .65);
+      font-size:14px;
+      margin-top:2px;
+      user-select:none;
+    }
+    .from{
+      font-size:13px;
+      font-weight:700;
+      color:var(--text);
+      margin-bottom:2px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .subject{
+      font-size:13px;
+      color:rgba(255,255,255,.85);
+      margin-bottom:4px;
+      font-weight:700;
+    }
+    .snippet{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.35;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+    }
+    .time{
+      font-family:var(--mono);
+      font-size:12px;
+      color:var(--muted2);
+      margin-top:2px;
+      white-space:nowrap;
+    }
+
+    /* Reader */
+    main{
+      min-height:0;
+      overflow:auto;
+      padding:18px;
+    }
+    .card{
+      max-width: 920px;
+      margin: 0 auto;
+      background: rgba(15,23,34,.55);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .mailtop{
+      padding:16px 18px;
+      border-bottom:1px solid var(--line);
+      background: rgba(12,20,30,.55);
+    }
+    .mailtop .subj{
+      font-weight:900;
+      font-size:18px;
+      letter-spacing:.2px;
+      margin:0 0 8px 0;
+    }
+    .mailmeta{
+      display:flex;
+      gap:14px;
+      flex-wrap:wrap;
+      color:var(--muted);
+      font-size:12px;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .mailmeta .left{
+      display:flex;
+      gap:14px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .kv{
+      display:flex;
+      gap:6px;
+      align-items:center;
+      font-family:var(--mono);
+    }
+    .kv b{
+      color:rgba(255,255,255,.85);
+      font-weight:800;
+      font-family:var(--sans);
+      letter-spacing:.2px;
+    }
+    .body{
+      padding:18px;
+      line-height:1.6;
+      font-size:14px;
+      color:rgba(255,255,255,.88);
+      white-space:pre-wrap;
+    }
+    .sig{
+      margin-top:16px;
+      padding-top:14px;
+      border-top:1px dashed rgba(255,255,255,.14);
+      color:var(--muted);
+      font-family:var(--mono);
+      font-size:12px;
+    }
+    .empty{
+      max-width:920px;
+      margin: 0 auto;
+      padding:26px;
+      border:1px dashed rgba(255,255,255,.18);
+      border-radius: var(--radius);
+      color:var(--muted);
+      background: rgba(255,255,255,.02);
+      line-height:1.6;
+    }
+    a{ color: var(--accent); text-decoration:none; }
+    a:hover{ text-decoration:underline; }
+
+    @media (max-width: 1050px){
+      .layout{ grid-template-columns: 260px 1fr; }
+      .list{ border-right:none; }
+      main{ display:none; }
+      header .search{ display:none; }
+      .meta{ min-width:auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="brand">
+        <div class="logo">M</div>
+        <div class="title">
+          <div class="top">Inbox</div>
+          <div class="sub" id="accountLabel">cover(YOUR_SID_HERE)@gmail.com</div>
+        </div>
+      </div>
+
+      <div class="search" aria-label="Search (visual only)">
+        <div class="icon">⌕</div>
+        <input id="search" type="text" placeholder="Search mail (optional)" />
+      </div>
+
+      <div class="meta">
+        <div class="pill" id="sidPill">SID: YOUR_SID_HERE</div>
+        <div class="pill">“Like the Chain, We are Linked.”</div>
+      </div>
+    </header>
+
+    <div class="layout">
+      <nav>
+        <button class="compose" id="composeBtn" type="button">
+          <span style="font-weight:900">＋</span>
+          <span>Compose</span>
+        </button>
+
+        <div class="navlist" style="margin-top:12px">
+          <div class="navitem active" id="navInbox">
+            <span>Inbox</span>
+            <span class="badge" id="unreadCount">0</span>
+          </div>
+          <div class="navitem" title="Visual only">
+            <span>Starred</span>
+            <span class="badge">—</span>
+          </div>
+          <div class="navitem" title="Visual only">
+            <span>Sent</span>
+            <span class="badge">—</span>
+          </div>
+          <div class="navitem" title="Visual only">
+            <span>Drafts</span>
+            <span class="badge">—</span>
+          </div>
+        </div>
+
+        <div class="note">
+          <div style="margin-bottom:10px; color:rgba(255,255,255,.75); font-weight:800;">Cover Theme</div>
+          <div>
+            A small trail of messages that reveal values: curiosity, community, creativity, and commitment to a collective.
+            <br><br>
+            <span style="color:rgba(255,255,255,.72)">Reminder:</span> no name, no face, no identifying details.
+          </div>
+        </div>
+      </nav>
+
+      <section class="list" aria-label="Message list">
+        <div class="listheader">
+          <div class="h">Unread</div>
+          <div class="small" id="listCount">0 messages</div>
+        </div>
+        <div id="rows"></div>
+      </section>
+
+      <main aria-label="Reading pane">
+        <div id="reader"></div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // ====== EDIT THESE ======
+    const SID = "YOUR_SID_HERE"; // <-- replace with your SID
+    const ACCOUNT = `cover(${SID})@gmail.com`;
+
+    // Create your "emails" here.
+    // Keep it anonymous: no name, no Greek orgs, no identifying photos.
+    const MESSAGES = [
+      {
+        id: "curiosity",
+        from: "curiosity@explore.com",
+        to: ACCOUNT,
+        subject: "Why I keep asking questions",
+        time: "Tue 7:12 PM",
+        starred: true,
+        body:
+`The easiest way to stay comfortable is to stop asking questions.
+
+But the most interesting paths begin with “what if?”
+
+Curiosity is how I learn, how I connect with people, and how I push myself into places that make me better—academically, socially, and as a member of a community.
+
+I’m not interested in checking boxes. I’m interested in understanding, improving, and building something meaningful.`,
+        signature: `Best,\nSID: ${SID}`
+      },
+      {
+        id: "teamwork",
+        from: "teamwork@collective.org",
+        to: ACCOUNT,
+        subject: "How I balance individuality with a group",
+        time: "Mon 9:34 PM",
+        starred: false,
+        body:
+`Groups work when individuals bring something real to the table—and still choose to move in the same direction.
+
+I try to contribute in two ways:
+1) Consistency: showing up, following through, doing the unglamorous work.
+2) Momentum: helping the group move forward when things stall.
+
+Individuality matters, but it’s strongest when it supports a collective goal.`,
+        signature: `— SID: ${SID}`
+      },
+      {
+        id: "community",
+        from: "community@tucson.org",
+        to: ACCOUNT,
+        subject: "Why service matters to me",
+        time: "Mon 6:08 PM",
+        starred: false,
+        body:
+`Communities aren’t defined by buildings or borders.
+They’re defined by people who decide to care.
+
+Service is my way of staying grounded—of remembering that the campus experience isn’t only about personal success.
+It’s also about leaving people and places better than you found them.
+
+I’m drawn to organizations where showing up matters, where traditions have purpose, and where impact is something you do—not something you claim.`,
+        signature: `SID: ${SID}`
+      },
+      {
+        id: "creativity",
+        from: "creativity@ideas.com",
+        to: ACCOUNT,
+        subject: "How I think differently",
+        time: "Sun 11:02 PM",
+        starred: true,
+        body:
+`Creativity is how I make sense of the world.
+
+Sometimes it looks like building something.
+Sometimes it looks like designing a better way to tell a story.
+Sometimes it’s simply finding an unexpected connection between two things that don’t seem related.
+
+I don’t want to be a person who only participates.
+I want to be a person who contributes.`,
+        signature: `SID: ${SID}`
+      },
+      {
+        id: "links",
+        from: "links@arizona.edu",
+        to: ACCOUNT,
+        subject: "Why I applied",
+        time: "Sun 8:17 PM",
+        starred: true,
+        body:
+`Links represents something rare:
+a group of people who choose to contribute—to service, to tradition, and to the people around them.
+
+I’m applying because I want to be part of a community built on action.
+The kind of community that makes the campus stronger and the city better.
+The kind of community where you’re remembered for how you showed up.`,
+        signature: `“Like the Chain, We are Linked.”\nSID: ${SID}`
+      }
+    ];
+    // =======================
+
+    // Populate account labels
+    document.getElementById("accountLabel").textContent = ACCOUNT;
+    document.getElementById("sidPill").textContent = `SID: ${SID}`;
+
+    const rowsEl = document.getElementById("rows");
+    const readerEl = document.getElementById("reader");
+    const unreadCountEl = document.getElementById("unreadCount");
+    const listCountEl = document.getElementById("listCount");
+    const searchEl = document.getElementById("search");
+
+    let activeId = null;
+
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function renderList(filter=""){
+      rowsEl.innerHTML = "";
+      const q = filter.trim().toLowerCase();
+      const filtered = MESSAGES.filter(m => {
+        if(!q) return true;
+        return (
+          m.from.toLowerCase().includes(q) ||
+          m.subject.toLowerCase().includes(q) ||
+          m.body.toLowerCase().includes(q)
+        );
+      });
+
+      unreadCountEl.textContent = String(filtered.length);
+      listCountEl.textContent = `${filtered.length} message${filtered.length===1?"":"s"}`;
+
+      filtered.forEach(m => {
+        const snippet = m.body.replace(/\s+/g," ").trim().slice(0, 120) + (m.body.length>120 ? "…" : "");
+        const row = document.createElement("div");
+        row.className = "row" + (m.id === activeId ? " active" : "");
+        row.dataset.id = m.id;
+
+        row.innerHTML = `
+          <div class="star" title="${m.starred ? "Starred" : "Not starred"}">${m.starred ? "★" : "☆"}</div>
+          <div>
+            <div class="from">${escapeHtml(m.from)}</div>
+            <div class="subject">${escapeHtml(m.subject)}</div>
+            <div class="snippet">${escapeHtml(snippet)}</div>
+          </div>
+          <div class="time">${escapeHtml(m.time)}</div>
+        `;
+
+        row.addEventListener("click", () => {
+          activeId = m.id;
+          renderList(searchEl.value);
+          renderReader(m.id);
+        });
+
+        rowsEl.appendChild(row);
+      });
+
+      // Auto-open first message on desktop widths
+      if (window.matchMedia("(min-width: 1051px)").matches){
+        const exists = filtered.some(m => m.id === activeId);
+        if(!activeId || !exists){
+          activeId = filtered[0]?.id ?? null;
+          renderList(searchEl.value);
+          if(activeId) renderReader(activeId);
+          else renderEmpty();
+        }
+      }
+    }
+
+    function renderReader(id){
+      const m = MESSAGES.find(x => x.id === id);
+      if(!m){ renderEmpty(); return; }
+
+      readerEl.innerHTML = `
+        <div class="card">
+          <div class="mailtop">
+            <p class="subj">${escapeHtml(m.subject)}</p>
+            <div class="mailmeta">
+              <div class="left">
+                <div class="kv"><span>From</span><b>${escapeHtml(m.from)}</b></div>
+                <div class="kv"><span>To</span><b>${escapeHtml(m.to)}</b></div>
+              </div>
+              <div class="kv"><span>Date</span><b>${escapeHtml(m.time)}</b></div>
+            </div>
+          </div>
+          <div class="body">${escapeHtml(m.body)}</div>
+          <div class="body sig">${escapeHtml(m.signature || `SID: ${SID}`)}</div>
+        </div>
+      `;
+    }
+
+    function renderEmpty(){
+      readerEl.innerHTML = `
+        <div class="empty">
+          <div style="font-weight:900; margin-bottom:8px; color:rgba(255,255,255,.85)">No message selected</div>
+          Click a message to open it.
+          <div style="margin-top:10px; font-family:var(--mono); color:rgba(255,255,255,.45)">
+            SID: ${escapeHtml(SID)}
+          </div>
+        </div>
+      `;
+    }
+
+    // Compose button: just a fun modal-like alert (no real sending)
+    document.getElementById("composeBtn").addEventListener("click", () => {
+      alert("Compose is visual only.\n\nTip: Edit the MESSAGES array in the HTML to change the emails.\n\nRemember: no name, no face, no identifying details.");
+    });
+
+    searchEl.addEventListener("input", (e) => {
+      renderList(e.target.value);
+      if (!window.matchMedia("(min-width: 1051px)").matches){
+        // On mobile layout, list-only view — nothing else to do.
+      }
+    });
+
+    // Initial render
+    renderList("");
+
+    // Keep UI responsive on resize
+    window.addEventListener("resize", () => {
+      renderList(searchEl.value);
+      if (!window.matchMedia("(min-width: 1051px)").matches){
+        // In compact mode, hide reader (CSS does) so no need to force selection.
+      } else if(activeId){
+        renderReader(activeId);
+      } else {
+        renderEmpty();
+      }
+    });
+  </script>
+</body>
+</html>
